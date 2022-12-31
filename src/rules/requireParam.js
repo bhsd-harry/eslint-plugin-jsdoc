@@ -53,6 +53,7 @@ export default iterateJsdoc(({
       'root',
     ],
     useDefaultObjectProperties = false,
+    exceptions = [],
   } = context.options[0] || {};
 
   const preferredTagName = utils.getPreferredTagName({
@@ -62,7 +63,10 @@ export default iterateJsdoc(({
     return;
   }
 
-  const functionParameterNames = utils.getFunctionParameterNames(useDefaultObjectProperties);
+  const functionParameterNames = utils.getFunctionParameterNames(useDefaultObjectProperties)
+    .filter((functionParameterName) => {
+      return !exceptions.includes(functionParameterName);
+    });
   if (!functionParameterNames.length) {
     return;
   }
@@ -468,6 +472,12 @@ export default iterateJsdoc(({
           },
           enableRootFixer: {
             type: 'boolean',
+          },
+          exceptions: {
+            items: {
+              type: 'string',
+            },
+            type: 'array',
           },
           exemptedBy: {
             items: {
