@@ -9,6 +9,7 @@ export default iterateJsdoc(({
   const {
     defaultDestructuredRootDescription = 'The root object',
     setDefaultDestructuredRootDescription = false,
+    exceptions = [],
   } = context.options[0] || {};
 
   const functionParameterNames = utils.getFunctionParameterNames();
@@ -31,6 +32,8 @@ export default iterateJsdoc(({
           });
           return;
         }
+      } else if (exceptions.includes(jsdocParameter.name)) {
+        return;
       }
 
       report(
@@ -76,6 +79,12 @@ export default iterateJsdoc(({
           },
           defaultDestructuredRootDescription: {
             type: 'string',
+          },
+          exceptions: {
+            items: {
+              type: 'string',
+            },
+            type: 'array',
           },
           setDefaultDestructuredRootDescription: {
             type: 'boolean',
