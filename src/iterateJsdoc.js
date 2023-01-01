@@ -1,3 +1,4 @@
+/* eslint complexity: ["error", 21] */
 import {
   getJSDocComment,
   commentHandler,
@@ -624,11 +625,11 @@ const getUtils = (
     return jsdocUtils.dropPathSegmentQuotes(name);
   };
 
-  utils.avoidDocs = () => {
+  utils.avoidDocs = (rule) => {
     if (
       ignoreReplacesDocs !== false &&
         (utils.hasTag('ignore') || utils.classHasTag('ignore')) ||
-      overrideReplacesDocs !== false &&
+      (overrideReplacesDocs === true || Array.isArray(overrideReplacesDocs) && overrideReplacesDocs?.includes(rule)) &&
         (utils.hasTag('override') || utils.classHasTag('override')) ||
       implementsReplacesDocs !== false &&
         (utils.hasTag('implements') || utils.classHasTag('implements')) ||
@@ -859,7 +860,7 @@ const getSettings = (context) => {
 
     // `require-param`, `require-description`, `require-example`,
     // `require-returns`, `require-throw`, `require-yields`
-    overrideReplacesDocs: context.settings.jsdoc?.overrideReplacesDocs,
+    overrideReplacesDocs: context.settings.jsdoc?.overrideReplacesDocs ?? true,
     ignoreReplacesDocs: context.settings.jsdoc?.ignoreReplacesDocs,
     implementsReplacesDocs: context.settings.jsdoc?.implementsReplacesDocs,
     augmentsExtendsReplacesDocs: context.settings.jsdoc?.augmentsExtendsReplacesDocs,

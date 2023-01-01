@@ -6,7 +6,7 @@ export default iterateJsdoc(({
   report,
   utils,
 }) => {
-  if (utils.avoidDocs()) {
+  if (utils.avoidDocs('require-example')) {
     return;
   }
 

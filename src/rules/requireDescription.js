@@ -14,7 +14,7 @@ export default iterateJsdoc(({
   utils,
   context,
 }) => {
-  if (utils.avoidDocs()) {
+  if (utils.avoidDocs('require-description')) {
     return;
   }
 

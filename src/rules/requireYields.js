@@ -31,7 +31,7 @@ const canSkip = (utils) => {
     // This seems to imply a class as well
     'interface',
   ]) ||
-    utils.avoidDocs();
+    utils.avoidDocs('require-yields');
 };
 
 const checkTagName = (utils, report, tagName) => {

@@ -20,7 +20,7 @@ const canSkip = (utils) => {
     // The designated type can itself document `@throws`
     'type',
   ]) ||
-    utils.avoidDocs();
+    utils.avoidDocs('require-throws');
 };
 
 export default iterateJsdoc(({
