@@ -149,9 +149,16 @@ const allBrancheshaveReturnValues = (node, promFilter) => {
     return allBrancheshaveReturnValues(lastBodyNode, promFilter);
   }
 
-  case 'LabeledStatement':
   case 'WhileStatement':
   case 'DoWhileStatement':
+    if (node.test.value === true) {
+      // If this is an infinite loop, we assume only one branch
+      //   is needed to provide a return
+      return hasReturnValue(node.body, false, promFilter);
+    }
+
+    // Fallthrough
+  case 'LabeledStatement':
   case 'ForStatement':
   case 'ForInStatement':
   case 'ForOfStatement':
@@ -363,8 +370,8 @@ const hasNonEmptyResolverCall = (node, resolverName) => {
   case 'PropertyDefinition':
   // istanbul ignore next -- In Babel?
   case 'ClassProperty':
-  /* eslint-enable no-fallthrough */
   case 'Property':
+  /* eslint-enable no-fallthrough */
     return node.computed && hasNonEmptyResolverCall(node.key, resolverName) ||
       hasNonEmptyResolverCall(node.value, resolverName);
   // istanbul ignore next -- In Babel?

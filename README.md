@@ -21,6 +21,7 @@ JSDoc linting rules for ESLint.
         * [`@override`/`@augments`/`@extends`/`@implements`/`@ignore` Without Accompanying `@param`/`@description`/`@example`/`@returns`/`@throws`/`@yields`](#user-content-eslint-plugin-jsdoc-settings-override-augments-extends-implements-ignore-without-accompanying-param-description-example-returns-throws-yields)
         * [Settings to Configure `check-types` and `no-undefined-types`](#user-content-eslint-plugin-jsdoc-settings-settings-to-configure-check-types-and-no-undefined-types)
         * [`structuredTags`](#user-content-eslint-plugin-jsdoc-settings-structuredtags)
+        * [`contexts`](#user-content-eslint-plugin-jsdoc-settings-contexts)
     * [Advanced](#user-content-eslint-plugin-jsdoc-advanced)
         * [AST and Selectors](#user-content-eslint-plugin-jsdoc-advanced-ast-and-selectors)
     * [Rules](#user-content-eslint-plugin-jsdoc-rules)
@@ -159,6 +160,7 @@ Finally, enable all of the rules that you would like to use.
         "jsdoc/require-throws": 1,
         "jsdoc/require-yields": 1, // Recommended
         "jsdoc/require-yields-check": 1, // Recommended
+        "jsdoc/sort-tags": 1,
         "jsdoc/tag-lines": 1, // Recommended
         "jsdoc/valid-types": 1 // Recommended
     }
@@ -176,6 +178,46 @@ which enables the rules commented above as "recommended":
 ```
 
 You can then selectively add to or override the recommended rules.
+
+Alternatively, if you wish to have all linting issues reported
+as failing errors, you may use the "recommended-error" config:
+
+```json
+{
+  "extends": ["plugin:jsdoc/recommended-error"]
+}
+```
+
+If you plan to use TypeScript syntax (and not just "typescript"
+`mode` to indicate the JSDoc flavor is TypeScript), you can configure
+the following:
+
+```javascript
+{
+    "rules": {
+      "jsdoc/no-types": 1,
+      "jsdoc/require-param-type": 0,
+      "jsdoc/require-property-type": 0,
+      "jsdoc/require-returns-type": 0,
+    }
+}
+```
+
+...or just use:
+
+```json
+{
+  "extends": ["plugin:jsdoc/recommended-typescript"]
+}
+```
+
+...or to report with failing errors instead of mere warnings:
+
+```json
+{
+  "extends": ["plugin:jsdoc/recommended-typescript-error"]
+}
+```
 
 <a name="user-content-eslint-plugin-jsdoc-options"></a>
 <a name="eslint-plugin-jsdoc-options"></a>
@@ -542,6 +584,14 @@ values are objects with the following optional properties:
     - `"typeOrName"` - Must have either type (e.g., `@throws {aType}`) or
         name (`@throws Some text`); does not require that both exist but
         disallows just an empty tag.
+
+<a name="user-content-eslint-plugin-jsdoc-settings-contexts"></a>
+<a name="eslint-plugin-jsdoc-settings-contexts"></a>
+### <code>contexts</code>
+
+`settings.jsdoc.contexts` can be used as the default for any rules
+with a `contexts` property option. See the "AST and Selectors" section
+for more on this format.
 
 <a name="user-content-eslint-plugin-jsdoc-advanced"></a>
 <a name="eslint-plugin-jsdoc-advanced"></a>
@@ -2012,10 +2062,10 @@ for example.
 This rule allows one optional string argument. If it is `"always"` then a
 problem is raised when the lines are not aligned. If it is `"never"` then
 a problem should be raised when there is more than one space between each
-line's parts. Defaults to `"never"`.
+line's parts. If it is `"any"`, no alignment is made. Defaults to `"never"`.
 
-Note that in addition to alignment, both options will ensure at least one
-space is present after the asterisk delimiter.
+Note that in addition to alignment, the "never" and "always" options will both
+ensure that at least one space is present after the asterisk delimiter.
 
 After the string, an options object is allowed with the following properties.
 
@@ -2023,8 +2073,7 @@ After the string, an options object is allowed with the following properties.
 <a name="eslint-plugin-jsdoc-rules-check-line-alignment-options-3-tags"></a>
 ##### <code>tags</code>
 
-Use this to change the tags which are sought for alignment changes. *Currently*
-*only works with the "never" option.* Defaults to an array of
+Use this to change the tags which are sought for alignment changes. Defaults to an array of
 `['param', 'arg', 'argument', 'property', 'prop', 'returns', 'return']`.
 
 <a name="user-content-eslint-plugin-jsdoc-rules-check-line-alignment-options-3-customspacings"></a>
@@ -2037,13 +2086,28 @@ An object with any of the following keys set to an integer. Affects spacing:
 - `postTag` - after the tag (e.g., `* @param  `)
 - `postType` - after the type (e.g., `* @param {someType}   `)
 - `postName` - after the name (e.g., `* @param {someType} name   `)
+- `postHyphen` - after any hyphens in the description (e.g., `* @param {someType} name -  A description`)
 
 If a spacing is not defined, it defaults to one.
+
+<a name="user-content-eslint-plugin-jsdoc-rules-check-line-alignment-options-3-preservemaindescriptionpostdelimiter"></a>
+<a name="eslint-plugin-jsdoc-rules-check-line-alignment-options-3-preservemaindescriptionpostdelimiter"></a>
+##### <code>preserveMainDescriptionPostDelimiter</code>
+
+A boolean to determine whether to preserve the post-delimiter spacing of the
+main description. If `false` or unset, will be set to a single space.
+
+<a name="user-content-eslint-plugin-jsdoc-rules-check-line-alignment-options-3-wrapindent"></a>
+<a name="eslint-plugin-jsdoc-rules-check-line-alignment-options-3-wrapindent"></a>
+##### <code>wrapIndent</code>
+
+The indent that will be applied for tag text after the first line.
+Default to the empty string (no indent).
 
 |||
 |---|---|
 |Context|everywhere|
-|Options|(a string matching `"always" or "never"` and optional object with `tags` and `customSpacings`)|
+|Options|(a string matching `"always"`, `"never"`, or `"any"` and optional object with `tags`, `customSpacings`, `preserveMainDescriptionPostDelimiter`, and `wrapIndent`)|
 |Tags|`param`, `property`, `returns` and others added by `tags`|
 |Aliases|`arg`, `argument`, `prop`, `return`|
 |Recommended|false|
@@ -2428,6 +2492,113 @@ const fn = ( lorem, sit ) => {}
 const fn = ( lorem, sit ) => {}
 // "jsdoc/check-line-alignment": ["error"|"warn", "always"]
 // Message: Expected JSDoc block lines to be aligned.
+
+/**
+ * Function description.
+ *
+ * @param {string} lorem - Description.
+ * @param {int}    sit   -   Description multi words.
+ */
+const fn = ( lorem, sit ) => {}
+// "jsdoc/check-line-alignment": ["error"|"warn", "never"]
+// Message: Expected JSDoc block lines to not be aligned.
+
+/**
+ * Function description.
+ *
+ * @param {string} lorem -  Description.
+ * @param {int}    sit   -   Description multi words.
+ */
+const fn = ( lorem, sit ) => {}
+// "jsdoc/check-line-alignment": ["error"|"warn", "never",{"customSpacings":{"postHyphen":2}}]
+// Message: Expected JSDoc block lines to not be aligned.
+
+/**
+ * Function description.
+ *
+ * @param {string} lorem - Description.
+ * @param {int} sit -  Description multi words.
+ */
+const fn = ( lorem, sit ) => {}
+// "jsdoc/check-line-alignment": ["error"|"warn", "never",{"customSpacings":{"postHyphen":2}}]
+// Message: Expected JSDoc block lines to not be aligned.
+
+/**
+ * Function description.
+ *
+ * @param {string} lorem - Description.
+ * @param {int}    sit   -  Description multi words.
+ */
+const fn = ( lorem, sit ) => {}
+// "jsdoc/check-line-alignment": ["error"|"warn", "always",{"customSpacings":{"postHyphen":2}}]
+// Message: Expected JSDoc block lines to be aligned.
+
+/**
+ * Function description.
+ *
+ * @param {string} lorem -  Description.
+ * @param {int}    sit   -   Description multi words.
+ */
+const fn = ( lorem, sit ) => {}
+// "jsdoc/check-line-alignment": ["error"|"warn", "always",{"customSpacings":{"postHyphen":2}}]
+// Message: Expected JSDoc block lines to be aligned.
+
+/**
+ * Function description.
+ *
+ * @param   {string} lorem -  Description.
+ * @param {int} sit -  Description multi words.
+ */
+const fn = ( lorem, sit ) => {}
+// "jsdoc/check-line-alignment": ["error"|"warn", "never",{"customSpacings":{"postHyphen":2}}]
+// Message: Expected JSDoc block lines to not be aligned.
+
+/**
+ * @param {string} lorem Description
+ * with multiple lines.
+ */
+function quux () {
+}
+// "jsdoc/check-line-alignment": ["error"|"warn", "any",{"wrapIndent":"  "}]
+// Message: Expected wrap indent
+
+/**
+ * Function description.
+ *
+ * @param {string} lorem Description.
+ * @param {int} sit Description multi
+ * line with asterisks.
+ */
+const fn = ( lorem, sit ) => {}
+// "jsdoc/check-line-alignment": ["error"|"warn", "always",{"wrapIndent":"  "}]
+// Message: Expected JSDoc block lines to be aligned.
+
+/**
+ * My function.
+ *
+ * @param {string} lorem Description.
+ * @param   {int}    sit   Description multiple
+ * lines.
+ */
+const fn = ( lorem, sit ) => {}
+// "jsdoc/check-line-alignment": ["error"|"warn", "never",{"wrapIndent":"  "}]
+// Message: Expected JSDoc block lines to not be aligned.
+
+/**
+ * @property {boolean} tls_verify_client_certificate - Whether our API should
+ *   enable TLS client authentication
+ */
+function quux () {}
+// "jsdoc/check-line-alignment": ["error"|"warn", "never",{"wrapIndent":"   "}]
+// Message: Expected wrap indent
+
+/**
+ * @property {boolean} tls_verify_client_certificate - Whether our API should
+ *   enable TLS client authentication
+ */
+function quux () {}
+// "jsdoc/check-line-alignment": ["error"|"warn", "never",{"wrapIndent":""}]
+// Message: Expected wrap indent
 ````
 
 The following patterns are not considered problems:
@@ -2784,6 +2955,60 @@ const fn = ( lorem, sit ) => {};
  */
 const fn = ( a, b ) => {};
 // "jsdoc/check-line-alignment": ["error"|"warn", "always"]
+
+/**
+ * @param {string} lorem Description
+ *   with multiple lines.
+ */
+function quux () {
+}
+// "jsdoc/check-line-alignment": ["error"|"warn", "any",{"wrapIndent":"  "}]
+
+/**
+ * @param {string} lorem Description
+ *   with multiple lines.
+ */
+function quux () {
+}
+// "jsdoc/check-line-alignment": ["error"|"warn", "never",{"wrapIndent":"  "}]
+
+/**
+ * Function description.
+ *
+ * @param {string} lorem Description.
+ * @param {int}    sit   Description multi
+ *                         line with asterisks.
+ */
+const fn = ( lorem, sit ) => {}
+// "jsdoc/check-line-alignment": ["error"|"warn", "always",{"wrapIndent":"  "}]
+
+/**
+ * Function description.
+ *
+ * @param {string} lorem Description.
+ * @param {int}    sit   Description multi
+ *                         line with
+ *                         asterisks.
+ */
+const fn = ( lorem, sit ) => {}
+// "jsdoc/check-line-alignment": ["error"|"warn", "always",{"wrapIndent":"  "}]
+
+/**
+ * @param {
+ *   string | number
+ * } lorem Description
+ *   with multiple lines.
+ */
+function quux () {
+}
+// "jsdoc/check-line-alignment": ["error"|"warn", "never",{"wrapIndent":"  "}]
+
+/**
+ * @param {string|string[]|TemplateResult|TemplateResult[]} event.detail.description -
+ *    Notification description
+ */
+function quux () {}
+// "jsdoc/check-line-alignment": ["error"|"warn", "never",{"wrapIndent":"   "}]
 ````
 
 
@@ -6685,8 +6910,8 @@ function is adhering.
 <a name="eslint-plugin-jsdoc-rules-implements-on-classes-options-10"></a>
 #### Options
 
-<a name="user-content-eslint-plugin-jsdoc-rules-implements-on-classes-options-10-contexts"></a>
-<a name="eslint-plugin-jsdoc-rules-implements-on-classes-options-10-contexts"></a>
+<a name="user-content-eslint-plugin-jsdoc-rules-implements-on-classes-options-10-contexts-1"></a>
+<a name="eslint-plugin-jsdoc-rules-implements-on-classes-options-10-contexts-1"></a>
 ##### <code>contexts</code>
 
 Set this to an array of strings representing the AST context (or an object with
@@ -7020,8 +7245,8 @@ You may also provide an object with `message`:
 }
 ```
 
-<a name="user-content-eslint-plugin-jsdoc-rules-match-description-options-11-contexts-1"></a>
-<a name="eslint-plugin-jsdoc-rules-match-description-options-11-contexts-1"></a>
+<a name="user-content-eslint-plugin-jsdoc-rules-match-description-options-11-contexts-2"></a>
+<a name="eslint-plugin-jsdoc-rules-match-description-options-11-contexts-2"></a>
 ##### <code>contexts</code>
 
 Set this to an array of strings representing the AST context (or an object with
@@ -7834,6 +8059,12 @@ name will actually be part of the description (e.g., for
 `@returns {type} notAName`). If you are defining your own tags, see the
 `structuredTags` setting (if `name: false`, this rule will not apply to
 that tag).
+
+<a name="user-content-eslint-plugin-jsdoc-rules-match-name-fixer"></a>
+<a name="eslint-plugin-jsdoc-rules-match-name-fixer"></a>
+#### Fixer
+
+Will replace `disallowName` with `replacement` if these are provided.
 
 <a name="user-content-eslint-plugin-jsdoc-rules-match-name-options-12"></a>
 <a name="eslint-plugin-jsdoc-rules-match-name-options-12"></a>
@@ -8845,8 +9076,8 @@ the presence of ES6 default parameters (bearing in mind that such
 "defaults" are only applied when the supplied value is missing or
 `undefined` but not for `null` or other "falsey" values).
 
-<a name="user-content-eslint-plugin-jsdoc-rules-no-defaults-options-16-contexts-2"></a>
-<a name="eslint-plugin-jsdoc-rules-no-defaults-options-16-contexts-2"></a>
+<a name="user-content-eslint-plugin-jsdoc-rules-no-defaults-options-16-contexts-3"></a>
+<a name="eslint-plugin-jsdoc-rules-no-defaults-options-16-contexts-3"></a>
 ##### <code>contexts</code>
 
 Set this to an array of strings representing the AST context (or an object with
@@ -9036,8 +9267,8 @@ not report if there were only a function declaration of the name "ignoreMe"
 <a name="eslint-plugin-jsdoc-rules-no-missing-syntax-options-17"></a>
 #### Options
 
-<a name="user-content-eslint-plugin-jsdoc-rules-no-missing-syntax-options-17-contexts-3"></a>
-<a name="eslint-plugin-jsdoc-rules-no-missing-syntax-options-17-contexts-3"></a>
+<a name="user-content-eslint-plugin-jsdoc-rules-no-missing-syntax-options-17-contexts-4"></a>
+<a name="eslint-plugin-jsdoc-rules-no-missing-syntax-options-17-contexts-4"></a>
 ##### <code>contexts</code>
 
 Set this to an array of strings representing the AST context (or an object with
@@ -9075,6 +9306,15 @@ function quux () {
 
 }
 // "jsdoc/no-missing-syntax": ["error"|"warn", {"contexts":[{"comment":"JsdocBlock[postDelimiter=\"\"]:has(JsdocTypeUnion > JsdocTypeName[value=\"Foo\"]:nth-child(1))","context":"FunctionDeclaration"}]}]
+// Message: Syntax is required: FunctionDeclaration with JsdocBlock[postDelimiter=""]:has(JsdocTypeUnion > JsdocTypeName[value="Foo"]:nth-child(1))
+
+/**
+ * @implements {Bar|Foo}
+ */
+function quux () {
+
+}
+// Settings: {"jsdoc":{"contexts":[{"comment":"JsdocBlock[postDelimiter=\"\"]:has(JsdocTypeUnion > JsdocTypeName[value=\"Foo\"]:nth-child(1))","context":"FunctionDeclaration"}]}}
 // Message: Syntax is required: FunctionDeclaration with JsdocBlock[postDelimiter=""]:has(JsdocTypeUnion > JsdocTypeName[value="Foo"]:nth-child(1))
 
 /**
@@ -9129,7 +9369,7 @@ function quux () {
 function quux () {
 
 }
-// Message: Rule `no-missing-syntax` is missing a `context` option.
+// Message: Rule `no-missing-syntax` is missing a `contexts` option.
 
 /**
  * @implements {Bar|Foo}
@@ -9513,8 +9753,8 @@ is designed to do), you can just use ESLint's rule.
 <a name="eslint-plugin-jsdoc-rules-no-restricted-syntax-options-19"></a>
 #### Options
 
-<a name="user-content-eslint-plugin-jsdoc-rules-no-restricted-syntax-options-19-contexts-4"></a>
-<a name="eslint-plugin-jsdoc-rules-no-restricted-syntax-options-19-contexts-4"></a>
+<a name="user-content-eslint-plugin-jsdoc-rules-no-restricted-syntax-options-19-contexts-5"></a>
+<a name="eslint-plugin-jsdoc-rules-no-restricted-syntax-options-19-contexts-5"></a>
 ##### <code>contexts</code>
 
 Set this to an array of strings representing the AST context (or an object with
@@ -9592,7 +9832,16 @@ function quux () {
 function quux () {
 
 }
-// Message: Rule `no-restricted-syntax` is missing a `context` option.
+// Message: Rule `no-restricted-syntax` is missing a `contexts` option.
+
+/**
+ * @implements {Bar|Foo}
+ */
+function quux () {
+
+}
+// Settings: {"jsdoc":{"contexts":["FunctionDeclaration"]}}
+// Message: Rule `no-restricted-syntax` is missing a `contexts` option.
 
 /**
  * @param opt_a
@@ -9670,6 +9919,48 @@ const MyComponent = ({ children }) => {
  */
 // "jsdoc/no-restricted-syntax": ["error"|"warn", {"contexts":[{"comment":"JsdocBlock:not(*:has(JsdocTag[tag=see]))","context":"any","message":"@see required on each block"}]}]
 // Message: @see required on each block
+
+/**
+ * @type {{a: string}}
+ */
+// "jsdoc/no-restricted-syntax": ["error"|"warn", {"contexts":[{"comment":"JsdocBlock:has(JsdocTag[tag=type][parsedType.type!=JsdocTypeStringValue][parsedType.type!=JsdocTypeNumber][parsedType.type!=JsdocTypeName])","context":"any","message":"@type should be limited to numeric or string literals and names"},{"comment":"JsdocBlock:has(JsdocTag[tag=type][parsedType.type=JsdocTypeName]:not(*[parsedType.value=/^(true|false|null|undefined|boolean|number|string)$/]))","context":"any","message":"@type names should only be recognized primitive types or literals"}]}]
+// Message: @type should be limited to numeric or string literals and names
+
+/**
+ * @type {abc}
+ */
+// "jsdoc/no-restricted-syntax": ["error"|"warn", {"contexts":[{"comment":"JsdocBlock:has(JsdocTag[tag=type][parsedType.type!=JsdocTypeStringValue][parsedType.type!=JsdocTypeNumber][parsedType.type!=JsdocTypeName])","context":"any","message":"@type should be limited to numeric or string literals and names"},{"comment":"JsdocBlock:has(JsdocTag[tag=type][parsedType.type=JsdocTypeName]:not(*[parsedType.value=/^(true|false|null|undefined|boolean|number|string)$/]))","context":"any","message":"@type names should only be recognized primitive types or literals"}]}]
+// Message: @type names should only be recognized primitive types or literals
+
+/**
+ *
+ */
+function test(): string { }
+// "jsdoc/no-restricted-syntax": ["error"|"warn", {"contexts":[{"comment":"JsdocBlock:not(*:has(JsdocTag[tag=/returns/]))","context":"FunctionDeclaration[returnType.typeAnnotation.type!=/TSVoidKeyword|TSUndefinedKeyword/]","message":"Functions with non-void return types must have a @returns tag"}]}]
+// Message: Functions with non-void return types must have a @returns tag
+
+/**
+ *
+ */
+let test = (): string => { };
+// "jsdoc/no-restricted-syntax": ["error"|"warn", {"contexts":[{"comment":"JsdocBlock:not(*:has(JsdocTag[tag=/returns/]))","context":"ArrowFunctionExpression[returnType.typeAnnotation.type!=/TSVoidKeyword|TSUndefinedKeyword/]","message":"Functions with non-void return types must have a @returns tag"}]}]
+// Message: Functions with non-void return types must have a @returns tag
+
+/**
+ * @returns
+ */
+let test: () => string;
+// "jsdoc/no-restricted-syntax": ["error"|"warn", {"contexts":[{"comment":"JsdocBlock:not(*:has(JsdocTag[tag=/returns/]:has(JsdocDescriptionLine)))","context":"VariableDeclaration:has(*[typeAnnotation.typeAnnotation.type=/TSFunctionType/][typeAnnotation.typeAnnotation.returnType.typeAnnotation.type!=/TSVoidKeyword|TSUndefinedKeyword/])","message":"FunctionType's with non-void return types must have a @returns tag with a description"}]}]
+// Message: FunctionType's with non-void return types must have a @returns tag with a description
+
+/**
+ *
+ */
+class Test {
+  abstract Test(): string;
+}
+// "jsdoc/no-restricted-syntax": ["error"|"warn", {"contexts":[{"comment":"JsdocBlock:not(*:has(JsdocTag[tag=/returns/]))","context":"TSEmptyBodyFunctionExpression[returnType.typeAnnotation.type!=/TSVoidKeyword|TSUndefinedKeyword/]","message":"methods with non-void return types must have a @returns tag"}]}]
+// Message: methods with non-void return types must have a @returns tag
 ````
 
 The following patterns are not considered problems:
@@ -9740,6 +10031,42 @@ function foo(): string;
 * @param sth Param text followed by newline
 */
 // "jsdoc/no-restricted-syntax": ["error"|"warn", {"contexts":[{"comment":"JsdocBlock[descriptionStartLine=0][hasPreterminalTagDescription=1]","context":"any","message":"Requiring descriptive text on 0th line but no preterminal description"}]}]
+
+/**
+ * @type {123}
+ */
+// "jsdoc/no-restricted-syntax": ["error"|"warn", {"contexts":[{"comment":"JsdocBlock:has(JsdocTag[tag=type][parsedType.type!=JsdocTypeStringValue][parsedType.type!=JsdocTypeNumber][parsedType.type!=JsdocTypeName])","context":"any","message":"@type should be limited to numeric or string literals and names"},{"comment":"JsdocBlock:has(JsdocTag[tag=type][parsedType.type=JsdocTypeName]:not(*[parsedType.value=/^(true|false|null|undefined|boolean|number|string)$/]))","context":"any","message":"@type names should only be recognized primitive types or literals"}]}]
+
+/**
+ * @type {boolean}
+ */
+// "jsdoc/no-restricted-syntax": ["error"|"warn", {"contexts":[{"comment":"JsdocBlock:has(JsdocTag[tag=type][parsedType.type!=JsdocTypeStringValue][parsedType.type!=JsdocTypeNumber][parsedType.type!=JsdocTypeName])","context":"any","message":"@type should be limited to numeric or string literals and names"},{"comment":"JsdocBlock:has(JsdocTag[tag=type][parsedType.type=JsdocTypeName]:not(*[parsedType.value=/^(true|false|null|undefined|boolean|number|string)$/]))","context":"any","message":"@type names should only be recognized primitive types or literals"}]}]
+
+/**
+ *
+ */
+function test(): void { }
+// "jsdoc/no-restricted-syntax": ["error"|"warn", {"contexts":[{"comment":"JsdocBlock:not(*:has(JsdocTag[tag=/returns/]))","context":"FunctionDeclaration[returnType.typeAnnotation.type!=/TSVoidKeyword|TSUndefinedKeyword/]","message":"Functions with return types must have a @returns tag"}]}]
+
+/**
+ *
+ */
+let test = (): undefined => { };
+// "jsdoc/no-restricted-syntax": ["error"|"warn", {"contexts":[{"comment":"JsdocBlock:not(*:has(JsdocTag[tag=/returns/]))","context":"ArrowFunctionExpression[returnType.typeAnnotation.type!=/TSVoidKeyword|TSUndefinedKeyword/]","message":"Functions with non-void return types must have a @returns tag"}]}]
+
+/**
+ * @returns A description
+ */
+let test: () => string;
+// "jsdoc/no-restricted-syntax": ["error"|"warn", {"contexts":[{"comment":"JsdocBlock:not(*:has(JsdocTag[tag=/returns/]:has(JsdocDescriptionLine)))","context":"VariableDeclaration:has(*[typeAnnotation.typeAnnotation.type=/TSFunctionType/])","message":"FunctionType's with non-void return types must have a @returns tag"}]}]
+
+/**
+ *
+ */
+class Test {
+  abstract Test(): void;
+}
+// "jsdoc/no-restricted-syntax": ["error"|"warn", {"contexts":[{"comment":"JsdocBlock:not(*:has(JsdocTag[tag=/returns/]))","context":"TSEmptyBodyFunctionExpression[returnType.typeAnnotation.type!=/TSVoidKeyword|TSUndefinedKeyword/]","message":"methods with non-void return types must have a @returns tag"}]}]
 ````
 
 
@@ -9756,8 +10083,8 @@ the type information would be redundant with TypeScript.
 <a name="eslint-plugin-jsdoc-rules-no-types-options-20"></a>
 #### Options
 
-<a name="user-content-eslint-plugin-jsdoc-rules-no-types-options-20-contexts-5"></a>
-<a name="eslint-plugin-jsdoc-rules-no-types-options-20-contexts-5"></a>
+<a name="user-content-eslint-plugin-jsdoc-rules-no-types-options-20-contexts-6"></a>
+<a name="eslint-plugin-jsdoc-rules-no-types-options-20-contexts-6"></a>
 ##### <code>contexts</code>
 
 Set this to an array of strings representing the AST context (or an object with
@@ -10879,14 +11206,23 @@ Requires that block description, explicit `@description`, and
 
 * Description must start with an uppercase alphabetical character.
 * Paragraphs must start with an uppercase alphabetical character.
-* Sentences must end with a period.
+* Sentences must end with a period, question mark, exclamation mark, or triple backticks.
 * Every line in a paragraph (except the first) which starts with an uppercase
   character must be preceded by a line ending with a period.
 * A colon or semi-colon followed by two line breaks is still part of the
   containing paragraph (unlike normal dual line breaks).
-* Text within inline tags `{...}` are not checked for sentence divisions.
+* Text within inline tags `{...}` or within triple backticks are not checked for sentence divisions.
 * Periods after items within the `abbreviations` option array are not treated
   as sentence endings.
+
+<a name="user-content-eslint-plugin-jsdoc-rules-require-description-complete-sentence-fixer-1"></a>
+<a name="eslint-plugin-jsdoc-rules-require-description-complete-sentence-fixer-1"></a>
+#### Fixer
+
+If sentences do not end with terminal punctuation, a period will be added.
+
+If sentences do not start with an uppercase character, the initial
+letter will be capitalized.
 
 <a name="user-content-eslint-plugin-jsdoc-rules-require-description-complete-sentence-options-23"></a>
 <a name="eslint-plugin-jsdoc-rules-require-description-complete-sentence-options-23"></a>
@@ -10949,7 +11285,7 @@ The following patterns are considered problems:
 function quux () {
 
 }
-// Message: Sentence should start with an uppercase character.
+// Message: Sentences should start with an uppercase character.
 
 /**
  * foo?
@@ -10957,7 +11293,7 @@ function quux () {
 function quux () {
 
 }
-// Message: Sentence should start with an uppercase character.
+// Message: Sentences should start with an uppercase character.
 
 /**
  * @description foo.
@@ -10965,7 +11301,7 @@ function quux () {
 function quux () {
 
 }
-// Message: Sentence should start with an uppercase character.
+// Message: Sentences should start with an uppercase character.
 
 /**
  * Foo)
@@ -10973,7 +11309,7 @@ function quux () {
 function quux () {
 
 }
-// Message: Sentence must end with a period.
+// Message: Sentences must end with a period.
 
 /**
  * `foo` is a variable
@@ -10981,7 +11317,7 @@ function quux () {
 function quux () {
 
 }
-// Message: Sentence must end with a period.
+// Message: Sentences must end with a period.
 
 /**
  * Foo.
@@ -10991,7 +11327,7 @@ function quux () {
 function quux () {
 
 }
-// Message: Sentence should start with an uppercase character.
+// Message: Sentences should start with an uppercase character.
 
 /**
  * тест.
@@ -10999,7 +11335,7 @@ function quux () {
 function quux () {
 
 }
-// Message: Sentence should start with an uppercase character.
+// Message: Sentences should start with an uppercase character.
 
 /**
  * Foo
@@ -11007,7 +11343,17 @@ function quux () {
 function quux () {
 
 }
-// Message: Sentence must end with a period.
+// Message: Sentences must end with a period.
+
+/**
+ * Foo
+ *
+ * @param x
+ */
+function quux () {
+
+}
+// Message: Sentences must end with a period.
 
 /**
  * Foo
@@ -11017,7 +11363,7 @@ function quux () {
 
 }
 // "jsdoc/require-description-complete-sentence": ["error"|"warn", {"newlineBeforeCapsAssumesBadSentenceEnd":true}]
-// Message: A line of text is started with an uppercase character, but preceding line does not end the sentence.
+// Message: A line of text is started with an uppercase character, but the preceding line does not end the sentence.
 
 /**
  * Foo.
@@ -11027,7 +11373,7 @@ function quux () {
 function quux (foo) {
 
 }
-// Message: Sentence should start with an uppercase character.
+// Message: Sentences should start with an uppercase character.
 
 /**
  * Foo.
@@ -11037,7 +11383,7 @@ function quux (foo) {
 function quux (foo) {
 
 }
-// Message: Sentence should start with an uppercase character.
+// Message: Sentences should start with an uppercase character.
 
 /**
  * {@see Foo.bar} buz
@@ -11045,7 +11391,7 @@ function quux (foo) {
 function quux (foo) {
 
 }
-// Message: Sentence should start with an uppercase character.
+// Message: Sentences should start with an uppercase character.
 
 /**
  * Foo.
@@ -11055,7 +11401,7 @@ function quux (foo) {
 function quux (foo) {
 
 }
-// Message: Sentence should start with an uppercase character.
+// Message: Sentences should start with an uppercase character.
 
 /**
  * Foo.
@@ -11065,7 +11411,7 @@ function quux (foo) {
 function quux (foo) {
 
 }
-// Message: Sentence should start with an uppercase character.
+// Message: Sentences should start with an uppercase character.
 
 /**
  * lorem ipsum dolor sit amet, consectetur adipiscing elit. pellentesque elit diam,
@@ -11078,7 +11424,7 @@ function quux (foo) {
 function longDescription (foo) {
 
 }
-// Message: Sentence should start with an uppercase character.
+// Message: Sentences should start with an uppercase character.
 
 /**
  * @arg {number} foo - Foo
@@ -11086,7 +11432,7 @@ function longDescription (foo) {
 function quux (foo) {
 
 }
-// Message: Sentence must end with a period.
+// Message: Sentences must end with a period.
 
 /**
  * @argument {number} foo - Foo
@@ -11094,7 +11440,7 @@ function quux (foo) {
 function quux (foo) {
 
 }
-// Message: Sentence must end with a period.
+// Message: Sentences must end with a period.
 
 /**
  * @return {number} foo
@@ -11102,7 +11448,7 @@ function quux (foo) {
 function quux (foo) {
 
 }
-// Message: Sentence should start with an uppercase character.
+// Message: Sentences should start with an uppercase character.
 
 /**
  * Returns bar.
@@ -11112,13 +11458,13 @@ function quux (foo) {
 function quux (foo) {
 
 }
-// Message: Sentence should start with an uppercase character.
+// Message: Sentences should start with an uppercase character.
 
 /**
  * @throws {object} Hello World
  * hello world
 */
-// Message: Sentence must end with a period.
+// Message: Sentences must end with a period.
 
 /**
  * @summary Foo
@@ -11126,7 +11472,7 @@ function quux (foo) {
 function quux () {
 
 }
-// Message: Sentence must end with a period.
+// Message: Sentences must end with a period.
 
 /**
  * @throws {SomeType} Foo
@@ -11134,7 +11480,7 @@ function quux () {
 function quux () {
 
 }
-// Message: Sentence must end with a period.
+// Message: Sentences must end with a period.
 
 /**
  * @see Foo
@@ -11143,7 +11489,7 @@ function quux () {
 
 }
 // "jsdoc/require-description-complete-sentence": ["error"|"warn", {"tags":["see"]}]
-// Message: Sentence must end with a period.
+// Message: Sentences must end with a period.
 
 /**
  * @param foo Foo bar
@@ -11153,7 +11499,7 @@ function quux (foo) {
 }
 // Settings: {"jsdoc":{"tagNamePreference":{"description":false}}}
 // "jsdoc/require-description-complete-sentence": ["error"|"warn", {"tags":["param"]}]
-// Message: Sentence must end with a period.
+// Message: Sentences must end with a period.
 
 /**
  * Sorry, but this isn't a complete sentence, Mr.
@@ -11162,7 +11508,7 @@ function quux () {
 
 }
 // "jsdoc/require-description-complete-sentence": ["error"|"warn", {"abbreviations":["Mr"]}]
-// Message: Sentence must end with a period.
+// Message: Sentences must end with a period.
 
 /**
  * Sorry, but this isn't a complete sentence Mr.
@@ -11171,7 +11517,7 @@ function quux () {
 
 }
 // "jsdoc/require-description-complete-sentence": ["error"|"warn", {"abbreviations":["Mr."]}]
-// Message: Sentence must end with a period.
+// Message: Sentences must end with a period.
 
 /**
  * Sorry, but this isn't a complete sentence Mr. 
@@ -11180,7 +11526,7 @@ function quux () {
 
 }
 // "jsdoc/require-description-complete-sentence": ["error"|"warn", {"abbreviations":["Mr"]}]
-// Message: Sentence must end with a period.
+// Message: Sentences must end with a period.
 
 /**
  * Sorry, but this isn't a complete sentence Mr. and Mrs.
@@ -11189,7 +11535,7 @@ function quux () {
 
 }
 // "jsdoc/require-description-complete-sentence": ["error"|"warn", {"abbreviations":["Mr","Mrs"]}]
-// Message: Sentence must end with a period.
+// Message: Sentences must end with a period.
 
 /**
  * This is a complete sentence. But this isn't, Mr.
@@ -11198,7 +11544,7 @@ function quux () {
 
 }
 // "jsdoc/require-description-complete-sentence": ["error"|"warn", {"abbreviations":["Mr"]}]
-// Message: Sentence must end with a period.
+// Message: Sentences must end with a period.
 
 /**
  * This is a complete Mr. sentence. But this isn't, Mr.
@@ -11207,7 +11553,7 @@ function quux () {
 
 }
 // "jsdoc/require-description-complete-sentence": ["error"|"warn", {"abbreviations":["Mr"]}]
-// Message: Sentence must end with a period.
+// Message: Sentences must end with a period.
 
 /**
  * This is a complete Mr. sentence.
@@ -11215,7 +11561,7 @@ function quux () {
 function quux () {
 
 }
-// Message: Sentence should start with an uppercase character.
+// Message: Sentences should start with an uppercase character.
 
 /**
  * This is fun, i.e. enjoyable, but not superlatively so, e.g. not
@@ -11224,7 +11570,7 @@ function quux () {
 function quux () {
 
 }
-// Message: Sentence should start with an uppercase character.
+// Message: Sentences should start with an uppercase character.
 
 /**
  * Do not have dynamic content; e.g. homepage. Here a simple unique id
@@ -11233,7 +11579,7 @@ function quux () {
  function quux () {
 
  }
-// Message: Sentence should start with an uppercase character.
+// Message: Sentences should start with an uppercase character.
 
 /**
  * Implements support for the
@@ -11242,7 +11588,7 @@ function quux () {
 function speak() {
 }
 // "jsdoc/require-description-complete-sentence": ["error"|"warn", {"newlineBeforeCapsAssumesBadSentenceEnd":true}]
-// Message: A line of text is started with an uppercase character, but preceding line does not end the sentence.
+// Message: A line of text is started with an uppercase character, but the preceding line does not end the sentence.
 
 /**
  * Foo.
@@ -11253,7 +11599,15 @@ function quux (foo) {
 
 }
 // "jsdoc/require-description-complete-sentence": ["error"|"warn", {"tags":["template"]}]
-// Message: Sentence should start with an uppercase character.
+// Message: Sentences should start with an uppercase character.
+
+/**
+ * Just a component.
+ * @param {Object} props Свойства.
+ * @return {ReactElement}.
+ */
+function quux () {}
+// Message: Sentences must be more than punctuation.
 ````
 
 The following patterns are not considered problems:
@@ -11313,7 +11667,7 @@ function quux () {
 }
 
 /**
- * Foo. {@see Math.sin}.
+ * Foo {@see Math.sin}.
  */
 function quux () {
 
@@ -11582,6 +11936,57 @@ function speak() {
 export default (foo) => {
   foo()
 }
+
+/** @file To learn more,
+ * see: https://github.com/d3/d3-ease. */
+
+/**
+ * This is a complete sentence...
+ */
+function quux () {
+
+}
+
+/**
+ * He wanted a few items: a jacket and shirt...
+ */
+function quux () {
+
+}
+
+/**
+ * The code in question was...
+ * ```
+ * alert('hello');
+ * ```
+ */
+function quux () {
+
+}
+
+/**
+ * @param {number|string|Date|Object|OverType|WhateverElse} multiType -
+ * Nice long explanation...
+ */
+function test (multiType) {
+}
+
+/**
+ * Any kind of fowl (e.g., a duck).
+ */
+function quux () {}
+
+/**
+ * The code in question was...
+ * ```
+ * do something
+ *
+ * interesting
+ * ```
+ */
+function quux () {
+
+}
 ````
 
 
@@ -11687,6 +12092,16 @@ class quux {
 
 }
 // "jsdoc/require-description": ["error"|"warn", {"contexts":["ClassDeclaration"],"descriptionStyle":"tag"}]
+// Message: Missing JSDoc @description declaration.
+
+/**
+ *
+ */
+class quux {
+
+}
+// Settings: {"jsdoc":{"contexts":["ClassDeclaration"]}}
+// "jsdoc/require-description": ["error"|"warn", {"descriptionStyle":"tag"}]
 // Message: Missing JSDoc @description declaration.
 
 /**
@@ -12173,8 +12588,8 @@ exemption of the rule.
 Boolean to indicate that no-argument functions should not be reported for
 missing `@example` declarations.
 
-<a name="user-content-eslint-plugin-jsdoc-rules-require-example-options-25-contexts-6"></a>
-<a name="eslint-plugin-jsdoc-rules-require-example-options-25-contexts-6"></a>
+<a name="user-content-eslint-plugin-jsdoc-rules-require-example-options-25-contexts-7"></a>
+<a name="eslint-plugin-jsdoc-rules-require-example-options-25-contexts-7"></a>
 ##### <code>contexts</code>
 
 Set this to an array of strings representing the AST context (or an object with
@@ -12212,8 +12627,8 @@ A value indicating whether setters should be checked. Defaults to `false`.
 A boolean on whether to enable the fixer (which adds an empty `@example` block).
 Defaults to `true`.
 
-<a name="user-content-eslint-plugin-jsdoc-rules-require-example-fixer"></a>
-<a name="eslint-plugin-jsdoc-rules-require-example-fixer"></a>
+<a name="user-content-eslint-plugin-jsdoc-rules-require-example-fixer-2"></a>
+<a name="eslint-plugin-jsdoc-rules-require-example-fixer-2"></a>
 #### Fixer
 
 The fixer for `require-example` will add an empty `@example`, but it will still
@@ -13078,8 +13493,8 @@ An object with the following optional boolean keys which all default to
 - `FunctionExpression`
 - `MethodDefinition`
 
-<a name="user-content-eslint-plugin-jsdoc-rules-require-jsdoc-options-28-contexts-7"></a>
-<a name="eslint-plugin-jsdoc-rules-require-jsdoc-options-28-contexts-7"></a>
+<a name="user-content-eslint-plugin-jsdoc-rules-require-jsdoc-options-28-contexts-8"></a>
+<a name="eslint-plugin-jsdoc-rules-require-jsdoc-options-28-contexts-8"></a>
 ##### <code>contexts</code>
 
 Set this to an array of strings or objects representing the additional AST
@@ -13275,6 +13690,13 @@ export const test = () => {
 
 };
 // "jsdoc/require-jsdoc": ["error"|"warn", {"contexts":["ArrowFunctionExpression"],"publicOnly":true}]
+// Message: Missing JSDoc comment.
+
+export const test = () => {
+
+};
+// Settings: {"jsdoc":{"contexts":["ArrowFunctionExpression"]}}
+// "jsdoc/require-jsdoc": ["error"|"warn", {"publicOnly":true}]
 // Message: Missing JSDoc comment.
 
 export const test = () => {
@@ -14858,8 +15280,8 @@ string. Defaults to `false`.
 The description string to set by default for destructured roots. Defaults to
 "The root object".
 
-<a name="user-content-eslint-plugin-jsdoc-rules-require-param-description-options-29-contexts-8"></a>
-<a name="eslint-plugin-jsdoc-rules-require-param-description-options-29-contexts-8"></a>
+<a name="user-content-eslint-plugin-jsdoc-rules-require-param-description-options-29-contexts-9"></a>
+<a name="eslint-plugin-jsdoc-rules-require-param-description-options-29-contexts-9"></a>
 ##### <code>contexts</code>
 
 Set this to an array of strings representing the AST context (or an object with
@@ -15056,8 +15478,8 @@ Requires that all function parameters have names.
 <a name="eslint-plugin-jsdoc-rules-require-param-name-options-30"></a>
 #### Options
 
-<a name="user-content-eslint-plugin-jsdoc-rules-require-param-name-options-30-contexts-9"></a>
-<a name="eslint-plugin-jsdoc-rules-require-param-name-options-30-contexts-9"></a>
+<a name="user-content-eslint-plugin-jsdoc-rules-require-param-name-options-30-contexts-10"></a>
+<a name="eslint-plugin-jsdoc-rules-require-param-name-options-30-contexts-10"></a>
 ##### <code>contexts</code>
 
 Set this to an array of strings representing the AST context (or an object with
@@ -15216,8 +15638,8 @@ object. Uses `defaultDestructuredRootType` for the type string. Defaults to
 
 The type string to set by default for destructured roots. Defaults to "object".
 
-<a name="user-content-eslint-plugin-jsdoc-rules-require-param-type-options-31-contexts-10"></a>
-<a name="eslint-plugin-jsdoc-rules-require-param-type-options-31-contexts-10"></a>
+<a name="user-content-eslint-plugin-jsdoc-rules-require-param-type-options-31-contexts-11"></a>
+<a name="eslint-plugin-jsdoc-rules-require-param-type-options-31-contexts-11"></a>
 ##### <code>contexts</code>
 
 Set this to an array of strings representing the AST context (or an object with
@@ -15396,16 +15818,16 @@ function quux (foo, {bar: {baz}}) {
 
 Requires that all function parameters are documented.
 
-<a name="user-content-eslint-plugin-jsdoc-rules-require-param-fixer-1"></a>
-<a name="eslint-plugin-jsdoc-rules-require-param-fixer-1"></a>
+<a name="user-content-eslint-plugin-jsdoc-rules-require-param-fixer-3"></a>
+<a name="eslint-plugin-jsdoc-rules-require-param-fixer-3"></a>
 #### Fixer
 
 Adds `@param <name>` for each tag present in the function signature but
 missing in the jsdoc. Can be disabled by setting the `enableFixer`
 option to `false`.
 
-<a name="user-content-eslint-plugin-jsdoc-rules-require-param-fixer-1-destructured-object-and-array-naming"></a>
-<a name="eslint-plugin-jsdoc-rules-require-param-fixer-1-destructured-object-and-array-naming"></a>
+<a name="user-content-eslint-plugin-jsdoc-rules-require-param-fixer-3-destructured-object-and-array-naming"></a>
+<a name="eslint-plugin-jsdoc-rules-require-param-fixer-3-destructured-object-and-array-naming"></a>
 ##### Destructured object and array naming
 
 When the fixer is applied to destructured objects, only the input name is
@@ -15457,8 +15879,8 @@ function quux ([foo, bar]) {
 */
 ```
 
-<a name="user-content-eslint-plugin-jsdoc-rules-require-param-fixer-1-missing-root-fixing"></a>
-<a name="eslint-plugin-jsdoc-rules-require-param-fixer-1-missing-root-fixing"></a>
+<a name="user-content-eslint-plugin-jsdoc-rules-require-param-fixer-3-missing-root-fixing"></a>
+<a name="eslint-plugin-jsdoc-rules-require-param-fixer-3-missing-root-fixing"></a>
 ##### Missing root fixing
 
 Note that unless `enableRootFixer` (or `enableFixer`) is set to `false`,
@@ -15493,8 +15915,8 @@ numeric component).
 And one can have the count begin at another number (e.g., `1`) by changing
 `autoIncrementBase` from the default of `0`.
 
-<a name="user-content-eslint-plugin-jsdoc-rules-require-param-fixer-1-rest-element-restelement-insertions"></a>
-<a name="eslint-plugin-jsdoc-rules-require-param-fixer-1-rest-element-restelement-insertions"></a>
+<a name="user-content-eslint-plugin-jsdoc-rules-require-param-fixer-3-rest-element-restelement-insertions"></a>
+<a name="eslint-plugin-jsdoc-rules-require-param-fixer-3-rest-element-restelement-insertions"></a>
 ##### Rest Element (<code>RestElement</code>) insertions
 
 The fixer will automatically report/insert
@@ -15546,8 +15968,8 @@ function baar ([a, ...extra]) {
 
 ...because it does not use the `...` syntax in the type.
 
-<a name="user-content-eslint-plugin-jsdoc-rules-require-param-fixer-1-object-rest-property-insertions"></a>
-<a name="eslint-plugin-jsdoc-rules-require-param-fixer-1-object-rest-property-insertions"></a>
+<a name="user-content-eslint-plugin-jsdoc-rules-require-param-fixer-3-object-rest-property-insertions"></a>
+<a name="eslint-plugin-jsdoc-rules-require-param-fixer-3-object-rest-property-insertions"></a>
 ##### Object Rest Property insertions
 
 If the `checkRestProperty` option is set to `true` (`false` by default),
@@ -15744,8 +16166,8 @@ You could set this regular expression to a more expansive list, or you
 could restrict it such that even types matching those strings would not
 need destructuring.
 
-<a name="user-content-eslint-plugin-jsdoc-rules-require-param-options-32-contexts-11"></a>
-<a name="eslint-plugin-jsdoc-rules-require-param-options-32-contexts-11"></a>
+<a name="user-content-eslint-plugin-jsdoc-rules-require-param-options-32-contexts-12"></a>
+<a name="eslint-plugin-jsdoc-rules-require-param-options-32-contexts-12"></a>
 ##### <code>contexts</code>
 
 Set this to an array of strings representing the AST context (or an object with
@@ -17177,8 +17599,8 @@ when their type is a plain `object`, `Object`, or `PlainObject`.
 Note that any other type, including a subtype of object such as
 `object<string, string>`, will not be reported.
 
-<a name="user-content-eslint-plugin-jsdoc-rules-require-property-fixer-2"></a>
-<a name="eslint-plugin-jsdoc-rules-require-property-fixer-2"></a>
+<a name="user-content-eslint-plugin-jsdoc-rules-require-property-fixer-4"></a>
+<a name="eslint-plugin-jsdoc-rules-require-property-fixer-4"></a>
 #### Fixer
 
 The fixer for `require-property` will add an empty `@property`.
@@ -17810,7 +18232,7 @@ function quux () {
 // Message: JSDoc @returns declaration present but return expression not available in function.
 
 /**
- * @returns Baz.
+ * @returns {SomeType} Baz.
  */
 function foo() {
     switch (true) {
@@ -17824,7 +18246,7 @@ function foo() {
 // Message: JSDoc @returns declaration present but return expression not available in function.
 
 /**
- * @returns Baz.
+ * @returns {SomeType} Baz.
  */
 function foo() {
     switch (true) {
@@ -17835,6 +18257,20 @@ function foo() {
             return "baz";
     }
 };
+// Message: JSDoc @returns declaration present but return expression not available in function.
+
+/**
+ * @returns {number}
+ */
+function foo() {
+  let n = 1;
+  while (n > 0.5) {
+    n = Math.random();
+    if (n < 0.2) {
+      return n;
+    }
+  }
+}
 // Message: JSDoc @returns declaration present but return expression not available in function.
 ````
 
@@ -17872,7 +18308,7 @@ function quux () {
 }
 
 /**
- * @returns {*} Foo.
+ * @returns {SomeType} Foo.
  */
 const quux = () => foo;
 
@@ -18246,6 +18682,16 @@ export function readFixture(path: string): Promise<Buffer>;
  * @param path The path to resolve relative to the fixture base. It will be normalized for the
  * operating system.
  *
+ * @returns {SomeType} The file contents as buffer.
+ */
+export function readFixture(path: string): Promise<Buffer>;
+
+/**
+ * Reads a test fixture.
+ *
+ * @param path The path to resolve relative to the fixture base. It will be normalized for the
+ * operating system.
+ *
  * @returns The file contents as buffer.
  */
 export function readFixture(path: string): Promise<Buffer> {
@@ -18273,14 +18719,14 @@ function quux (path) {
 };
 
 /**
- * @returns {*} Foo.
+ * @returns {SomeType} Foo.
  */
 const quux = () => new Promise((resolve) => {
   resolve(3);
 });
 
 /**
- * @returns {*} Foo.
+ * @returns {SomeType} Foo.
  */
 const quux = function () {
   return new Promise((resolve) => {
@@ -18417,6 +18863,63 @@ export function f(): string {
 
   interface I {}
 }
+
+/**
+ * @param {boolean} bar A fun variable.
+ * @returns {*} Anything at all!
+ */
+function foo( bar ) {
+  if ( bar ) {
+    return functionWithUnknownReturnType();
+  }
+}
+
+/**
+ * @returns Baz.
+ */
+function foo() {
+    switch (true) {
+        default:
+            switch (false) {
+                default: return;
+            }
+            return "baz";
+    }
+};
+
+/**
+ * @returns Baz.
+ */
+function foo() {
+    switch (true) {
+        default:
+            switch (false) {
+                default: return;
+            }
+            return "baz";
+    }
+};
+
+/**
+ * @returns
+ */
+const quux = (someVar) => {
+  if (someVar) {
+    return true;
+  }
+};
+
+/**
+ * @returns {number}
+ */
+function foo() {
+  while (true) {
+    const n = Math.random();
+    if (n < 0.5) {
+      return n;
+    }
+  }
+}
 ````
 
 
@@ -18432,8 +18935,8 @@ or if it is `Promise<void>` or `Promise<undefined>`.
 <a name="eslint-plugin-jsdoc-rules-require-returns-description-options-34"></a>
 #### Options
 
-<a name="user-content-eslint-plugin-jsdoc-rules-require-returns-description-options-34-contexts-12"></a>
-<a name="eslint-plugin-jsdoc-rules-require-returns-description-options-34-contexts-12"></a>
+<a name="user-content-eslint-plugin-jsdoc-rules-require-returns-description-options-34-contexts-13"></a>
+<a name="eslint-plugin-jsdoc-rules-require-returns-description-options-34-contexts-13"></a>
 ##### <code>contexts</code>
 
 Set this to an array of strings representing the AST context (or an object with
@@ -18591,8 +19094,8 @@ Requires that `@returns` tag has `type` value.
 <a name="eslint-plugin-jsdoc-rules-require-returns-type-options-35"></a>
 #### Options
 
-<a name="user-content-eslint-plugin-jsdoc-rules-require-returns-type-options-35-contexts-13"></a>
-<a name="eslint-plugin-jsdoc-rules-require-returns-type-options-35-contexts-13"></a>
+<a name="user-content-eslint-plugin-jsdoc-rules-require-returns-type-options-35-contexts-14"></a>
+<a name="eslint-plugin-jsdoc-rules-require-returns-type-options-35-contexts-14"></a>
 ##### <code>contexts</code>
 
 Set this to an array of strings representing the AST context (or an object with
@@ -22382,7 +22885,8 @@ The following tags have their name/namepath portion (the non-whitespace
 text after the tag name) checked:
 
 1. Name(path)-defining tags requiring namepath: `@event`, `@callback`,
-    `@external`, `@host`, `@name`, `@typedef`, and `@template`
+    `@exports` (JSDoc only),
+    `@external`, `@host`, `@name`, `@typedef` (JSDoc only), and `@template`
     (TypeScript/Closure only); `@param` (`@arg`, `@argument`) and `@property`
     (`@prop`) also fall into this category, but while this rule will check
     their namepath validity, we leave the requiring of the name portion
@@ -22391,11 +22895,11 @@ text after the tag name) checked:
 1. Name(path)-defining tags (which may have value without namepath or their
     namepath can be expressed elsewhere on the block):
     `@class`, `@constructor`, `@constant`, `@const`, `@function`, `@func`,
-    `@method`, `@interface` (TypeScript tag only), `@member`, `@var`,
+    `@method`, `@interface` (non-Closure only), `@member`, `@var`,
     `@mixin`, `@namespace`, `@module` (module paths are not planned for
     TypeScript)
 1. Name(path)-pointing tags requiring namepath: `@alias`, `@augments`,
-    `@extends`, `@lends`, `@memberof`, `@memberof!`, `@mixes`, `@this`
+    `@extends` (JSDoc only), `@lends`, `@memberof`, `@memberof!`, `@mixes`, `@requires`, `@this`
     (jsdoc only)
 1. Name(path)-pointing tags (which may have value without namepath or their
     namepath can be expressed elsewhere on the block): `@listens`, `@fires`,
@@ -23144,6 +23648,16 @@ function assign(employees) {
   // ...
 }
 // "jsdoc/valid-types": ["error"|"warn", {"allowEmptyNamepaths":true,"checkSeesForNamepaths":false}]
+
+/**
+ * @param {typeof obj["level1"]["level2"]} foo
+ * @param {Parameters<testFunc>[0]} ghi
+ * @param {{[key: string]: string}} hjk
+ */
+function quux() {
+
+}
+// Settings: {"jsdoc":{"mode":"typescript"}}
 ````
 
 

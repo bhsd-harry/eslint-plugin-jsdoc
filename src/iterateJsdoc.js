@@ -214,6 +214,9 @@ const getUtils = (
     }, idx) => {
       if (idx && (tag || end)) {
         lastDescriptionLine = idx - 1;
+        if (!tag && description) {
+          descriptions.push(description);
+        }
 
         return true;
       }
@@ -722,8 +725,8 @@ const getUtils = (
     return jsdocUtils.getTagStructureForMode(mde, settings.structuredTags);
   };
 
-  utils.hasDefinedTypeTag = (tag) => {
-    return jsdocUtils.hasDefinedTypeTag(tag, settings.mode);
+  utils.mayBeUndefinedTypeTag = (tag) => {
+    return jsdocUtils.mayBeUndefinedTypeTag(tag, settings.mode);
   };
 
   utils.hasValueOrExecutorHasNonEmptyResolveValue = (anyPromiseAsReturn, allBranches) => {
@@ -870,7 +873,12 @@ const getSettings = (context) => {
 
     // Many rules, e.g., `check-tag-names`
     mode: context.settings.jsdoc?.mode ??
-      (context.parserPath.includes('@typescript-eslint') ? 'typescript' : 'jsdoc'),
+      (context.parserPath?.includes('@typescript-eslint') ||
+      context.languageOptions?.parser?.meta?.name?.includes('typescript') ?
+        'typescript' : 'jsdoc'),
+
+    // Many rules
+    contexts: context.settings.jsdoc?.contexts,
   };
   /* eslint-enable canonical/sort-keys */
 
@@ -1174,6 +1182,7 @@ const iterateAllJsdocs = (iterator, ruleConfig, contexts, additiveCommentContext
     if (lastCall && ruleConfig.exit) {
       ruleConfig.exit({
         context,
+        settings,
         state,
         utils,
       });
@@ -1321,7 +1330,7 @@ export default function iterateJsdoc (iterator, ruleConfig) {
       if (ruleConfig.contextDefaults || ruleConfig.contextSelected || ruleConfig.matchContext) {
         contexts = ruleConfig.matchContext && context.options[0]?.match ?
           context.options[0].match :
-          jsdocUtils.enforcedContexts(context, ruleConfig.contextDefaults);
+          jsdocUtils.enforcedContexts(context, ruleConfig.contextDefaults, ruleConfig.nonGlobalSettings ? {} : settings);
 
         if (contexts) {
           contexts = contexts.map((obj) => {
@@ -1408,6 +1417,7 @@ export default function iterateJsdoc (iterator, ruleConfig) {
         contextObject['Program:exit'] = () => {
           ruleConfig.exit({
             context,
+            settings,
             state,
           });
         };

@@ -92,12 +92,16 @@ export default iterateJsdoc(({
     !returnNever &&
     (
       reportMissingReturnForUndefinedTypes ||
-      utils.hasDefinedTypeTag(tag)
+      !utils.mayBeUndefinedTypeTag(tag)
     ) &&
-    !utils.hasValueOrExecutorHasNonEmptyResolveValue(
+    (tag.type === '' && !utils.hasValueOrExecutorHasNonEmptyResolveValue(
+      exemptAsync,
+    ) ||
+    tag.type !== '' && !utils.hasValueOrExecutorHasNonEmptyResolveValue(
       exemptAsync,
       true,
-    ) && (!exemptGenerators || !node.generator)
+    )) &&
+    (!exemptGenerators || !node.generator)
   ) {
     report(`JSDoc @${tagName} declaration present but return expression not available in function.`);
   }

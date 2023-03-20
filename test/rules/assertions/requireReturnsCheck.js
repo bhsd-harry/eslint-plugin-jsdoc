@@ -613,7 +613,7 @@ export default {
     {
       code: `
       /**
-       * @returns Baz.
+       * @returns {SomeType} Baz.
        */
       function foo() {
           switch (true) {
@@ -635,7 +635,7 @@ export default {
     {
       code: `
       /**
-       * @returns Baz.
+       * @returns {SomeType} Baz.
        */
       function foo() {
           switch (true) {
@@ -654,6 +654,29 @@ export default {
         },
       ],
     },
+    {
+      code: `
+        /**
+         * @returns {number}
+         */
+        function foo() {
+          let n = 1;
+          while (n > 0.5) {
+            n = Math.random();
+            if (n < 0.2) {
+              return n;
+            }
+          }
+        }
+      `,
+      errors: [
+        {
+          line: 2,
+          message: 'JSDoc @returns declaration present but return expression not available in function.',
+        },
+      ],
+    },
+
   ],
   valid: [
     {
@@ -701,7 +724,7 @@ export default {
     {
       code: `
           /**
-           * @returns {*} Foo.
+           * @returns {SomeType} Foo.
            */
           const quux = () => foo;
       `,
@@ -1268,6 +1291,20 @@ export default {
        * @param path The path to resolve relative to the fixture base. It will be normalized for the
        * operating system.
        *
+       * @returns {SomeType} The file contents as buffer.
+       */
+      export function readFixture(path: string): Promise<Buffer>;
+      `,
+      parser: require.resolve('@typescript-eslint/parser'),
+    },
+    {
+      code: `
+      /**
+       * Reads a test fixture.
+       *
+       * @param path The path to resolve relative to the fixture base. It will be normalized for the
+       * operating system.
+       *
        * @returns The file contents as buffer.
        */
       export function readFixture(path: string): Promise<Buffer> {
@@ -1306,7 +1343,7 @@ export default {
     {
       code: `
       /**
-       * @returns {*} Foo.
+       * @returns {SomeType} Foo.
        */
       const quux = () => new Promise((resolve) => {
         resolve(3);
@@ -1316,7 +1353,7 @@ export default {
     {
       code: `
       /**
-       * @returns {*} Foo.
+       * @returns {SomeType} Foo.
        */
       const quux = function () {
         return new Promise((resolve) => {
@@ -1504,6 +1541,78 @@ export default {
       }
       `,
       parser: require.resolve('@typescript-eslint/parser'),
+    },
+    {
+      code: `
+      /**
+       * @param {boolean} bar A fun variable.
+       * @returns {*} Anything at all!
+       */
+      function foo( bar ) {
+        if ( bar ) {
+          return functionWithUnknownReturnType();
+        }
+      }
+      `,
+    },
+    {
+      code: `
+      /**
+       * @returns Baz.
+       */
+      function foo() {
+          switch (true) {
+              default:
+                  switch (false) {
+                      default: return;
+                  }
+                  return "baz";
+          }
+      };
+      `,
+    },
+    {
+      code: `
+      /**
+       * @returns Baz.
+       */
+      function foo() {
+          switch (true) {
+              default:
+                  switch (false) {
+                      default: return;
+                  }
+                  return "baz";
+          }
+      };
+      `,
+    },
+    {
+      code: `
+      /**
+       * @returns
+       */
+      const quux = (someVar) => {
+        if (someVar) {
+          return true;
+        }
+      };
+  `,
+    },
+    {
+      code: `
+        /**
+         * @returns {number}
+         */
+        function foo() {
+          while (true) {
+            const n = Math.random();
+            if (n < 0.5) {
+              return n;
+            }
+          }
+        }
+      `,
     },
   ],
 };

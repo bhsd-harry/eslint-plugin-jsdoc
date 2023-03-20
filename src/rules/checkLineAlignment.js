@@ -64,6 +64,13 @@ const checkNotAlignedPerTag = (utils, tag, customSpacings) => {
     });
   };
 
+  const postHyphenSpacing = customSpacings?.postHyphen ?? 1;
+  const exactHyphenSpacing = new RegExp(`^\\s*-\\s{${postHyphenSpacing},${postHyphenSpacing}}(?!\\s)`, 'u');
+  const hasNoHyphen = !(/^\s*-(?!$)/u).test(tokens.description);
+  const hasExactHyphenSpacing = exactHyphenSpacing.test(
+    tokens.description,
+  );
+
   // If checking alignment on multiple lines, need to check other `source`
   //   items
   // Go through `post*` spacing properties and exit to indicate problem if
@@ -82,7 +89,7 @@ const checkNotAlignedPerTag = (utils, tag, customSpacings) => {
       // 2. There is a (single) space, no immediate content, and yet another
       //     space is found subsequently (not separated by intervening content)
       spacerPropVal && !contentPropVal && followedBySpace(idx);
-  });
+  }) && (hasNoHyphen || hasExactHyphenSpacing);
   if (ok) {
     return;
   }
@@ -108,6 +115,13 @@ const checkNotAlignedPerTag = (utils, tag, customSpacings) => {
       }
     }
 
+    if (!hasExactHyphenSpacing) {
+      const hyphenSpacing = /^\s*-\s*/u;
+      tokens.description = tokens.description.replace(
+        hyphenSpacing, '-' + ''.padStart(postHyphenSpacing, ' '),
+      );
+    }
+
     utils.setTag(tag, tokens);
   };
 
@@ -123,6 +137,7 @@ const checkAlignment = ({
   report,
   tags,
   utils,
+  wrapIndent,
 }) => {
   const transform = commentFlow(
     alignTransform({
@@ -130,6 +145,7 @@ const checkAlignment = ({
       indent,
       preserveMainDescriptionPostDelimiter,
       tags,
+      wrapIndent,
     }),
   );
   const transformedJsdoc = transform(jsdoc);
@@ -162,6 +178,7 @@ export default iterateJsdoc(({
     ],
     preserveMainDescriptionPostDelimiter,
     customSpacings,
+    wrapIndent = '',
   } = context.options[1] || {};
 
   if (context.options[0] === 'always') {
@@ -179,14 +196,48 @@ export default iterateJsdoc(({
       report,
       tags: applicableTags,
       utils,
+      wrapIndent,
     });
 
     return;
   }
 
   const foundTags = utils.getPresentTags(applicableTags);
+  if (context.options[0] !== 'any') {
+    for (const tag of foundTags) {
+      checkNotAlignedPerTag(utils, tag, customSpacings);
+    }
+  }
+
   for (const tag of foundTags) {
-    checkNotAlignedPerTag(utils, tag, customSpacings);
+    if (tag.source.length > 1) {
+      let idx = 0;
+      for (const {
+        tokens,
+      // Avoid the tag line
+      } of tag.source.slice(1)) {
+        idx++;
+
+        if (
+          !tokens.description ||
+          // Avoid first lines after multiline type
+          tokens.type ||
+          tokens.name
+        ) {
+          continue;
+        }
+
+        // Don't include a single separating space/tab
+        if (tokens.postDelimiter.slice(1) !== wrapIndent) {
+          utils.reportJSDoc('Expected wrap indent', {
+            line: tag.source[0].number + idx,
+          }, () => {
+            tokens.postDelimiter = tokens.postDelimiter.charAt() + wrapIndent;
+          });
+          return;
+        }
+      }
+    }
   }
 }, {
   iterateAllJsdocs: true,
@@ -199,7 +250,7 @@ export default iterateJsdoc(({
     schema: [
       {
         enum: [
-          'always', 'never',
+          'always', 'never', 'any',
         ],
         type: 'string',
       },
@@ -210,6 +261,9 @@ export default iterateJsdoc(({
             additionalProperties: false,
             properties: {
               postDelimiter: {
+                type: 'integer',
+              },
+              postHyphen: {
                 type: 'integer',
               },
               postName: {
@@ -232,6 +286,9 @@ export default iterateJsdoc(({
               type: 'string',
             },
             type: 'array',
+          },
+          wrapIndent: {
+            type: 'string',
           },
         },
         type: 'object',

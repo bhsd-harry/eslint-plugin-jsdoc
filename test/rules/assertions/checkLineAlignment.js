@@ -1157,6 +1157,367 @@ export default {
         const fn = ( lorem, sit ) => {}
       `,
     },
+    {
+      code: `
+        /**
+         * Function description.
+         *
+         * @param {string} lorem - Description.
+         * @param {int}    sit   -   Description multi words.
+         */
+        const fn = ( lorem, sit ) => {}
+      `,
+      errors: [
+        {
+          line: 6,
+          message: 'Expected JSDoc block lines to not be aligned.',
+          type: 'Block',
+        },
+      ],
+      options: [
+        'never',
+      ],
+      output: `
+        /**
+         * Function description.
+         *
+         * @param {string} lorem - Description.
+         * @param {int} sit - Description multi words.
+         */
+        const fn = ( lorem, sit ) => {}
+      `,
+    },
+    {
+      code: `
+        /**
+         * Function description.
+         *
+         * @param {string} lorem -  Description.
+         * @param {int}    sit   -   Description multi words.
+         */
+        const fn = ( lorem, sit ) => {}
+      `,
+      errors: [
+        {
+          line: 6,
+          message: 'Expected JSDoc block lines to not be aligned.',
+          type: 'Block',
+        },
+      ],
+      options: [
+        'never',
+        {
+          customSpacings: {
+            postHyphen: 2,
+          },
+        },
+      ],
+      output: `
+        /**
+         * Function description.
+         *
+         * @param {string} lorem -  Description.
+         * @param {int} sit -  Description multi words.
+         */
+        const fn = ( lorem, sit ) => {}
+      `,
+    },
+    {
+      code: `
+        /**
+         * Function description.
+         *
+         * @param {string} lorem - Description.
+         * @param {int} sit -  Description multi words.
+         */
+        const fn = ( lorem, sit ) => {}
+      `,
+      errors: [
+        {
+          line: 5,
+          message: 'Expected JSDoc block lines to not be aligned.',
+          type: 'Block',
+        },
+      ],
+      options: [
+        'never',
+        {
+          customSpacings: {
+            postHyphen: 2,
+          },
+        },
+      ],
+      output: `
+        /**
+         * Function description.
+         *
+         * @param {string} lorem -  Description.
+         * @param {int} sit -  Description multi words.
+         */
+        const fn = ( lorem, sit ) => {}
+      `,
+    },
+    {
+      code: `
+        /**
+         * Function description.
+         *
+         * @param {string} lorem - Description.
+         * @param {int}    sit   -  Description multi words.
+         */
+        const fn = ( lorem, sit ) => {}
+      `,
+      errors: [
+        {
+          line: 2,
+          message: 'Expected JSDoc block lines to be aligned.',
+          type: 'Block',
+        },
+      ],
+      options: [
+        'always', {
+          customSpacings: {
+            postHyphen: 2,
+          },
+        },
+      ],
+      output: `
+        /**
+         * Function description.
+         *
+         * @param {string} lorem -  Description.
+         * @param {int}    sit   -  Description multi words.
+         */
+        const fn = ( lorem, sit ) => {}
+      `,
+    },
+    {
+      code: `
+        /**
+         * Function description.
+         *
+         * @param {string} lorem -  Description.
+         * @param {int}    sit   -   Description multi words.
+         */
+        const fn = ( lorem, sit ) => {}
+      `,
+      errors: [
+        {
+          line: 2,
+          message: 'Expected JSDoc block lines to be aligned.',
+          type: 'Block',
+        },
+      ],
+      options: [
+        'always', {
+          customSpacings: {
+            postHyphen: 2,
+          },
+        },
+      ],
+      output: `
+        /**
+         * Function description.
+         *
+         * @param {string} lorem -  Description.
+         * @param {int}    sit   -  Description multi words.
+         */
+        const fn = ( lorem, sit ) => {}
+      `,
+    },
+    {
+      code: `
+        /**
+         * Function description.
+         *
+         * @param   {string} lorem -  Description.
+         * @param {int} sit -  Description multi words.
+         */
+        const fn = ( lorem, sit ) => {}
+      `,
+      errors: [
+        {
+          line: 5,
+          message: 'Expected JSDoc block lines to not be aligned.',
+          type: 'Block',
+        },
+      ],
+      options: [
+        'never', {
+          customSpacings: {
+            postHyphen: 2,
+          },
+        },
+      ],
+      output: `
+        /**
+         * Function description.
+         *
+         * @param {string} lorem -  Description.
+         * @param {int} sit -  Description multi words.
+         */
+        const fn = ( lorem, sit ) => {}
+      `,
+    },
+    {
+      code: `
+        /**
+         * @param {string} lorem Description
+         * with multiple lines.
+         */
+        function quux () {
+        }
+      `,
+      errors: [
+        {
+          line: 4,
+          message: 'Expected wrap indent',
+          type: 'Block',
+        },
+      ],
+      options: [
+        'any',
+        {
+          wrapIndent: '  ',
+        },
+      ],
+      output: `
+        /**
+         * @param {string} lorem Description
+         *   with multiple lines.
+         */
+        function quux () {
+        }
+      `,
+    },
+    {
+      code: `
+        /**
+         * Function description.
+         *
+         * @param {string} lorem Description.
+         * @param {int} sit Description multi
+         * line with asterisks.
+         */
+        const fn = ( lorem, sit ) => {}
+      `,
+      errors: [
+        {
+          line: 2,
+          message: 'Expected JSDoc block lines to be aligned.',
+          type: 'Block',
+        },
+      ],
+      options: [
+        'always',
+        {
+          wrapIndent: '  ',
+        },
+      ],
+      output: `
+        /**
+         * Function description.
+         *
+         * @param {string} lorem Description.
+         * @param {int}    sit   Description multi
+         *                         line with asterisks.
+         */
+        const fn = ( lorem, sit ) => {}
+      `,
+    },
+    {
+      code: `
+        /**
+         * My function.
+         *
+         * @param {string} lorem Description.
+         * @param   {int}    sit   Description multiple
+         * lines.
+         */
+        const fn = ( lorem, sit ) => {}
+      `,
+      errors: [
+        {
+          line: 6,
+          message: 'Expected JSDoc block lines to not be aligned.',
+          type: 'Block',
+        },
+      ],
+      options: [
+        'never',
+        {
+          wrapIndent: '  ',
+        },
+      ],
+      output: `
+        /**
+         * My function.
+         *
+         * @param {string} lorem Description.
+         * @param {int} sit Description multiple
+         * lines.
+         */
+        const fn = ( lorem, sit ) => {}
+      `,
+    },
+    {
+      code: `
+      /**
+       * @property {boolean} tls_verify_client_certificate - Whether our API should
+       *   enable TLS client authentication
+       */
+      function quux () {}
+      `,
+      errors: [
+        {
+          line: 4,
+          message: 'Expected wrap indent',
+          type: 'Block',
+        },
+      ],
+      options: [
+        'never',
+        {
+          wrapIndent: '   ',
+        },
+      ],
+      output: `
+      /**
+       * @property {boolean} tls_verify_client_certificate - Whether our API should
+       *    enable TLS client authentication
+       */
+      function quux () {}
+      `,
+    },
+    {
+      code: `
+      /**
+       * @property {boolean} tls_verify_client_certificate - Whether our API should
+       *   enable TLS client authentication
+       */
+      function quux () {}
+      `,
+      errors: [
+        {
+          line: 4,
+          message: 'Expected wrap indent',
+          type: 'Block',
+        },
+      ],
+      options: [
+        'never',
+        {
+          wrapIndent: '',
+        },
+      ],
+      output: `
+      /**
+       * @property {boolean} tls_verify_client_certificate - Whether our API should
+       * enable TLS client authentication
+       */
+      function quux () {}
+      `,
+    },
   ],
   valid: [
     {
@@ -1705,6 +2066,108 @@ export default {
       `,
       options: [
         'always',
+      ],
+    },
+    {
+      code: `
+        /**
+         * @param {string} lorem Description
+         *   with multiple lines.
+         */
+        function quux () {
+        }
+      `,
+      options: [
+        'any',
+        {
+          wrapIndent: '  ',
+        },
+      ],
+    },
+    {
+      code: `
+        /**
+         * @param {string} lorem Description
+         *   with multiple lines.
+         */
+        function quux () {
+        }
+      `,
+      options: [
+        'never',
+        {
+          wrapIndent: '  ',
+        },
+      ],
+    },
+    {
+      code: `
+      /**
+       * Function description.
+       *
+       * @param {string} lorem Description.
+       * @param {int}    sit   Description multi
+       *                         line with asterisks.
+       */
+      const fn = ( lorem, sit ) => {}
+      `,
+      options: [
+        'always',
+        {
+          wrapIndent: '  ',
+        },
+      ],
+    },
+    {
+      code: `
+      /**
+       * Function description.
+       *
+       * @param {string} lorem Description.
+       * @param {int}    sit   Description multi
+       *                         line with
+       *                         asterisks.
+       */
+      const fn = ( lorem, sit ) => {}
+      `,
+      options: [
+        'always',
+        {
+          wrapIndent: '  ',
+        },
+      ],
+    },
+    {
+      code: `
+        /**
+         * @param {
+         *   string | number
+         * } lorem Description
+         *   with multiple lines.
+         */
+        function quux () {
+        }
+      `,
+      options: [
+        'never',
+        {
+          wrapIndent: '  ',
+        },
+      ],
+    },
+    {
+      code: `
+      /**
+       * @param {string|string[]|TemplateResult|TemplateResult[]} event.detail.description -
+       *    Notification description
+       */
+      function quux () {}
+      `,
+      options: [
+        'never',
+        {
+          wrapIndent: '   ',
+        },
       ],
     },
   ],

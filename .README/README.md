@@ -88,6 +88,7 @@ Finally, enable all of the rules that you would like to use.
         "jsdoc/require-throws": 1,
         "jsdoc/require-yields": 1, // Recommended
         "jsdoc/require-yields-check": 1, // Recommended
+        "jsdoc/sort-tags": 1,
         "jsdoc/tag-lines": 1, // Recommended
         "jsdoc/valid-types": 1 // Recommended
     }
@@ -105,6 +106,46 @@ which enables the rules commented above as "recommended":
 ```
 
 You can then selectively add to or override the recommended rules.
+
+Alternatively, if you wish to have all linting issues reported
+as failing errors, you may use the "recommended-error" config:
+
+```json
+{
+  "extends": ["plugin:jsdoc/recommended-error"]
+}
+```
+
+If you plan to use TypeScript syntax (and not just "typescript"
+`mode` to indicate the JSDoc flavor is TypeScript), you can configure
+the following:
+
+```javascript
+{
+    "rules": {
+      "jsdoc/no-types": 1,
+      "jsdoc/require-param-type": 0,
+      "jsdoc/require-property-type": 0,
+      "jsdoc/require-returns-type": 0,
+    }
+}
+```
+
+...or just use:
+
+```json
+{
+  "extends": ["plugin:jsdoc/recommended-typescript"]
+}
+```
+
+...or to report with failing errors instead of mere warnings:
+
+```json
+{
+  "extends": ["plugin:jsdoc/recommended-typescript-error"]
+}
+```
 
 ## Options
 
@@ -451,6 +492,12 @@ values are objects with the following optional properties:
     - `"typeOrName"` - Must have either type (e.g., `@throws {aType}`) or
         name (`@throws Some text`); does not require that both exist but
         disallows just an empty tag.
+
+### `contexts`
+
+`settings.jsdoc.contexts` can be used as the default for any rules
+with a `contexts` property option. See the "AST and Selectors" section
+for more on this format.
 
 ## Advanced
 

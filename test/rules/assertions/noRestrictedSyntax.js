@@ -151,9 +151,32 @@ export default {
       errors: [
         {
           line: 2,
-          message: 'Rule `no-restricted-syntax` is missing a `context` option.',
+          message: 'Rule `no-restricted-syntax` is missing a `contexts` option.',
         },
       ],
+    },
+    {
+      code: `
+      /**
+       * @implements {Bar|Foo}
+       */
+      function quux () {
+
+      }
+      `,
+      errors: [
+        {
+          line: 2,
+          message: 'Rule `no-restricted-syntax` is missing a `contexts` option.',
+        },
+      ],
+      settings: {
+        jsdoc: {
+          contexts: [
+            'FunctionDeclaration',
+          ],
+        },
+      },
     },
     {
       code: `
@@ -465,6 +488,170 @@ export default {
         },
       ],
     },
+    {
+      code: `
+        /**
+         * @type {{a: string}}
+         */
+      `,
+      errors: [
+        {
+          line: 2,
+          message: '@type should be limited to numeric or string literals and names',
+        },
+      ],
+      options: [
+        {
+          contexts: [
+            {
+              comment: 'JsdocBlock:has(JsdocTag[tag=type][parsedType.type!=JsdocTypeStringValue][parsedType.type!=JsdocTypeNumber][parsedType.type!=JsdocTypeName])',
+              context: 'any',
+              message: '@type should be limited to numeric or string literals and names',
+            },
+            {
+              comment: 'JsdocBlock:has(JsdocTag[tag=type][parsedType.type=JsdocTypeName]:not(*[parsedType.value=/^(true|false|null|undefined|boolean|number|string)$/]))',
+              context: 'any',
+              message: '@type names should only be recognized primitive types or literals',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      code: `
+        /**
+         * @type {abc}
+         */
+      `,
+      errors: [
+        {
+          line: 2,
+          message: '@type names should only be recognized primitive types or literals',
+        },
+      ],
+      options: [
+        {
+          contexts: [
+            {
+              comment: 'JsdocBlock:has(JsdocTag[tag=type][parsedType.type!=JsdocTypeStringValue][parsedType.type!=JsdocTypeNumber][parsedType.type!=JsdocTypeName])',
+              context: 'any',
+              message: '@type should be limited to numeric or string literals and names',
+            },
+            {
+              comment: 'JsdocBlock:has(JsdocTag[tag=type][parsedType.type=JsdocTypeName]:not(*[parsedType.value=/^(true|false|null|undefined|boolean|number|string)$/]))',
+              context: 'any',
+              message: '@type names should only be recognized primitive types or literals',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      code: `
+      /**
+       *
+       */
+      function test(): string { }
+      `,
+      errors: [
+        {
+          line: 2,
+          message: 'Functions with non-void return types must have a @returns tag',
+        },
+      ],
+      options: [
+        {
+          contexts: [
+            {
+              comment: 'JsdocBlock:not(*:has(JsdocTag[tag=/returns/]))',
+              context: 'FunctionDeclaration[returnType.typeAnnotation.type!=/TSVoidKeyword|TSUndefinedKeyword/]',
+              message: 'Functions with non-void return types must have a @returns tag',
+            },
+          ],
+        },
+      ],
+      parser: require.resolve('@typescript-eslint/parser'),
+    },
+    {
+      code: `
+      /**
+       *
+       */
+      let test = (): string => { };
+      `,
+      errors: [
+        {
+          line: 2,
+          message: 'Functions with non-void return types must have a @returns tag',
+        },
+      ],
+      options: [
+        {
+          contexts: [
+            {
+              comment: 'JsdocBlock:not(*:has(JsdocTag[tag=/returns/]))',
+              context: 'ArrowFunctionExpression[returnType.typeAnnotation.type!=/TSVoidKeyword|TSUndefinedKeyword/]',
+              message: 'Functions with non-void return types must have a @returns tag',
+            },
+          ],
+        },
+      ],
+      parser: require.resolve('@typescript-eslint/parser'),
+    },
+    {
+      code: `
+      /**
+       * @returns
+       */
+      let test: () => string;
+      `,
+      errors: [
+        {
+          line: 2,
+          message: 'FunctionType\'s with non-void return types must have a @returns tag with a description',
+        },
+      ],
+      options: [
+        {
+          contexts: [
+            {
+              comment: 'JsdocBlock:not(*:has(JsdocTag[tag=/returns/]:has(JsdocDescriptionLine)))',
+              context: 'VariableDeclaration:has(*[typeAnnotation.typeAnnotation.type=/TSFunctionType/][typeAnnotation.typeAnnotation.returnType.typeAnnotation.type!=/TSVoidKeyword|TSUndefinedKeyword/])',
+              message: 'FunctionType\'s with non-void return types must have a @returns tag with a description',
+            },
+          ],
+        },
+      ],
+      parser: require.resolve('@typescript-eslint/parser'),
+    },
+    {
+      code: `
+      /**
+       *
+       */
+      class Test {
+        abstract Test(): string;
+      }
+      `,
+      errors: [
+        {
+          line: 2,
+          message: 'methods with non-void return types must have a @returns tag',
+        },
+      ],
+      options: [
+        {
+          contexts: [
+            {
+              comment: 'JsdocBlock:not(*:has(JsdocTag[tag=/returns/]))',
+              context: 'TSEmptyBodyFunctionExpression[returnType.typeAnnotation.type!=/TSVoidKeyword|TSUndefinedKeyword/]',
+              message: 'methods with non-void return types must have a @returns tag',
+            },
+          ],
+        },
+      ],
+      parser: require.resolve('@typescript-eslint/parser'),
+    },
   ],
   valid: [
     {
@@ -674,6 +861,134 @@ export default {
           ],
         },
       ],
+    },
+    {
+      code: `
+        /**
+         * @type {123}
+         */
+      `,
+      options: [
+        {
+          contexts: [
+            {
+              comment: 'JsdocBlock:has(JsdocTag[tag=type][parsedType.type!=JsdocTypeStringValue][parsedType.type!=JsdocTypeNumber][parsedType.type!=JsdocTypeName])',
+              context: 'any',
+              message: '@type should be limited to numeric or string literals and names',
+            },
+            {
+              comment: 'JsdocBlock:has(JsdocTag[tag=type][parsedType.type=JsdocTypeName]:not(*[parsedType.value=/^(true|false|null|undefined|boolean|number|string)$/]))',
+              context: 'any',
+              message: '@type names should only be recognized primitive types or literals',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      code: `
+        /**
+         * @type {boolean}
+         */
+      `,
+      options: [
+        {
+          contexts: [
+            {
+              comment: 'JsdocBlock:has(JsdocTag[tag=type][parsedType.type!=JsdocTypeStringValue][parsedType.type!=JsdocTypeNumber][parsedType.type!=JsdocTypeName])',
+              context: 'any',
+              message: '@type should be limited to numeric or string literals and names',
+            },
+            {
+              comment: 'JsdocBlock:has(JsdocTag[tag=type][parsedType.type=JsdocTypeName]:not(*[parsedType.value=/^(true|false|null|undefined|boolean|number|string)$/]))',
+              context: 'any',
+              message: '@type names should only be recognized primitive types or literals',
+            },
+          ],
+        },
+      ],
+    },
+    {
+      code: `
+      /**
+       *
+       */
+      function test(): void { }
+      `,
+      options: [
+        {
+          contexts: [
+            {
+              comment: 'JsdocBlock:not(*:has(JsdocTag[tag=/returns/]))',
+              context: 'FunctionDeclaration[returnType.typeAnnotation.type!=/TSVoidKeyword|TSUndefinedKeyword/]',
+              message: 'Functions with return types must have a @returns tag',
+            },
+          ],
+        },
+      ],
+      parser: require.resolve('@typescript-eslint/parser'),
+    },
+    {
+      code: `
+      /**
+       *
+       */
+      let test = (): undefined => { };
+      `,
+      options: [
+        {
+          contexts: [
+            {
+              comment: 'JsdocBlock:not(*:has(JsdocTag[tag=/returns/]))',
+              context: 'ArrowFunctionExpression[returnType.typeAnnotation.type!=/TSVoidKeyword|TSUndefinedKeyword/]',
+              message: 'Functions with non-void return types must have a @returns tag',
+            },
+          ],
+        },
+      ],
+      parser: require.resolve('@typescript-eslint/parser'),
+    },
+    {
+      code: `
+      /**
+       * @returns A description
+       */
+      let test: () => string;
+      `,
+      options: [
+        {
+          contexts: [
+            {
+              comment: 'JsdocBlock:not(*:has(JsdocTag[tag=/returns/]:has(JsdocDescriptionLine)))',
+              context: 'VariableDeclaration:has(*[typeAnnotation.typeAnnotation.type=/TSFunctionType/])',
+              message: 'FunctionType\'s with non-void return types must have a @returns tag',
+            },
+          ],
+        },
+      ],
+      parser: require.resolve('@typescript-eslint/parser'),
+    },
+    {
+      code: `
+      /**
+       *
+       */
+      class Test {
+        abstract Test(): void;
+      }
+      `,
+      options: [
+        {
+          contexts: [
+            {
+              comment: 'JsdocBlock:not(*:has(JsdocTag[tag=/returns/]))',
+              context: 'TSEmptyBodyFunctionExpression[returnType.typeAnnotation.type!=/TSVoidKeyword|TSUndefinedKeyword/]',
+              message: 'methods with non-void return types must have a @returns tag',
+            },
+          ],
+        },
+      ],
+      parser: require.resolve('@typescript-eslint/parser'),
     },
   ],
 };
